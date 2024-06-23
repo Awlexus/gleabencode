@@ -31,18 +31,64 @@ pub fn decode_term(raw: String) -> Result(BencodeType, String) {
   }
 }
 
+pub fn decode_string(raw: String) -> Result(String, String) {
+  raw
+  |> do_decode()
+  |> result.try(fn(result) {
+    case result {
+      DecodeResult(value: String(string: string), ..) -> Ok(string)
+      _ -> Error("Decoded value is not a string")
+    }
+  })
+}
+
+pub fn decode_int(raw: String) -> Result(Int, String) {
+  raw
+  |> do_decode()
+  |> result.try(fn(result) {
+    case result {
+      DecodeResult(value: Int(int: int), ..) -> Ok(int)
+      _ -> Error("Decoded value is not an intewer")
+    }
+  })
+}
+
+pub fn decode_list(raw: String) -> Result(List(BencodeType), String) {
+  raw
+  |> do_decode()
+  |> result.try(fn(result) {
+    case result {
+      DecodeResult(value: List(list: list), ..) -> Ok(list)
+      _ -> Error("Decoded value is not a list")
+    }
+  })
+}
+
+pub fn decode_dict(
+  raw: String,
+) -> Result(Dict(BencodeType, BencodeType), String) {
+  raw
+  |> do_decode()
+  |> result.try(fn(result) {
+    case result {
+      DecodeResult(value: Dict(dict: dict), ..) -> Ok(dict)
+      _ -> Error("Decoded value is not a dict")
+    }
+  })
+}
+
 fn do_decode(raw: String) -> Result(DecodeResult, String) {
   case bit_array.from_string(raw) {
-    <<"i":utf8, _:bytes>> -> decode_integer(raw)
+    <<"i":utf8, _:bytes>> -> do_decode_integer(raw)
     <<"d":utf8, _:bytes>> -> decode_dict0(raw)
     <<"l":utf8, _:bytes>> -> decode_list0(raw)
     // starts with a digit
-    <<a, _:bytes>> if 48 <= a && a <= 57 -> decode_string(raw)
+    <<a, _:bytes>> if 48 <= a && a <= 57 -> do_decode_string(raw)
     _ -> Error("Invalid data type")
   }
 }
 
-fn decode_integer(raw: String) -> Result(DecodeResult, String) {
+fn do_decode_integer(raw: String) -> Result(DecodeResult, String) {
   let assert "i" <> rest = raw
   use #(raw_int, rest) <- result.try(next_term(rest))
 
@@ -55,7 +101,7 @@ fn decode_integer(raw: String) -> Result(DecodeResult, String) {
   Ok(DecodeResult(value: Int(int: int), rest: rest))
 }
 
-fn decode_string(raw: String) -> Result(DecodeResult, String) {
+fn do_decode_string(raw: String) -> Result(DecodeResult, String) {
   use #(raw_length, rest) <- result.try(
     raw
     |> string.split_once(":")
@@ -102,10 +148,10 @@ fn decode_list1(decoder: DecodeResult) -> Result(DecodeResult, String) {
 
 fn decode_dict0(raw: String) -> Result(DecodeResult, String) {
   let assert "d" <> rest = raw
-  decode_dict1(DecodeResult(value: Dict(dict: dict.new()), rest: rest))
+  do_decode_dict1(DecodeResult(value: Dict(dict: dict.new()), rest: rest))
 }
 
-fn decode_dict1(decoder: DecodeResult) -> Result(DecodeResult, String) {
+fn do_decode_dict1(decoder: DecodeResult) -> Result(DecodeResult, String) {
   let assert DecodeResult(value: Dict(dict: agg), rest: rest) = decoder
   use DecodeResult(value: key, rest: rest) <- result.try(do_decode(rest))
 
