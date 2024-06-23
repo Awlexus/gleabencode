@@ -18,7 +18,7 @@ type DecodeResult {
   DecodeResult(value: BencodeType, rest: String)
 }
 
-// Public api
+// decoding api
 
 pub fn decode_term(raw: String) -> Result(BencodeType, String) {
   case do_decode(raw) {
@@ -74,8 +74,6 @@ pub fn decode_dict(
     }
   })
 }
-
-// Private Api
 
 fn do_decode(raw: String) -> Result(DecodeResult, String) {
   case bit_array.from_string(raw) {
