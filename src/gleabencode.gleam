@@ -6,10 +6,6 @@ import gleam/list
 import gleam/result
 import gleam/string
 
-pub fn main() {
-  io.println("Hello from gleabencode!")
-}
-
 pub type BencodeType {
 
   Dict(dict: Dict(BencodeType, BencodeType))
