@@ -99,3 +99,39 @@ pub fn handle_dict_unclosed_test() {
   |> should.be_error()
   |> should.equal("Syntax error: unclosed term")
 }
+
+// encoding tests
+
+pub fn encode_string() {
+  gleabencode.String(string: "Hello world")
+  |> gleabencode.encode_term()
+  |> should.equal("11:Hello world")
+}
+
+pub fn encode_integer() {
+  gleabencode.Int(int: 42)
+  |> gleabencode.encode_term()
+  |> should.equal("i42e")
+
+  gleabencode.Int(int: -42)
+  |> gleabencode.encode_term()
+  |> should.equal("i-42e")
+}
+
+pub fn encode_list() {
+  // Easier to write the test like this
+  "li42ei-42ee"
+  |> gleabencode.decode_term()
+  |> should.be_ok()
+  |> gleabencode.encode_term()
+  |> should.equal("li42ei-42ee")
+}
+
+pub fn encode_dict() {
+  // Easier to write the test like this
+  "di42ei-42ee"
+  |> gleabencode.decode_term()
+  |> should.be_ok()
+  |> gleabencode.encode_term()
+  |> should.equal("dli42ei-42ee")
+}

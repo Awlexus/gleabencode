@@ -1,7 +1,6 @@
 import gleam/bit_array
 import gleam/dict.{type Dict}
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
@@ -168,4 +167,47 @@ fn next_term(raw: String) -> Result(#(String, String), String) {
   raw
   |> string.split_once("e")
   |> result.map_error(fn(_) { "Syntax error: unclosed term" })
+}
+
+// encoding api
+
+pub fn encode_term(term: BencodeType) -> String {
+  case term {
+    String(string: string) -> encode_string(string)
+    Int(int: int) -> encode_int(int)
+    List(list: list) -> encode_list(list)
+    Dict(dict: dict) -> encode_dict(dict)
+  }
+}
+
+pub fn encode_string(string: String) -> String {
+  let length =
+    string
+    |> string.length()
+    |> int.to_string()
+
+  length <> ":" <> string
+}
+
+pub fn encode_int(int: Int) -> String {
+  "i" <> int.to_string(int) <> "e"
+}
+
+pub fn encode_list(list: List(BencodeType)) -> String {
+  let encoded_values =
+    list
+    |> list.map(encode_term)
+    |> string.concat()
+
+  "i" <> encoded_values <> "e"
+}
+
+pub fn encode_dict(dict: Dict(BencodeType, BencodeType)) -> String {
+  let encoded_values =
+    dict
+    |> dict.to_list()
+    |> list.flat_map(fn(el) { [encode_term(el.0), encode_term(el.1)] })
+    |> string.concat()
+
+  "i" <> encoded_values <> "e"
 }
