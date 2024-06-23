@@ -22,7 +22,7 @@ type DecodeResult {
   DecodeResult(value: BencodeType, rest: String)
 }
 
-pub fn decode(raw: String) -> Result(BencodeType, String) {
+pub fn decode_term(raw: String) -> Result(BencodeType, String) {
   case do_decode(raw) {
     Ok(DecodeResult(value: value, rest: "")) -> Ok(value)
     Ok(DecodeResult(rest: rest, ..)) ->
