@@ -7,6 +7,7 @@ pub fn main() {
   gleeunit.main()
 }
 
+// decoding tests
 pub fn decode_string_test() {
   "11:Hello world"
   |> gleabencode.decode_term()
